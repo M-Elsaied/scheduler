@@ -5,35 +5,67 @@ const { checkDoubleBooking, checkWorkingHours } = require('../middleware/appoint
 const { checkRole } = require('../middleware/auth');
 const passport = require('passport');
 
-router.post('/',
-  passport.authenticate('jwt', { session: false }),
-  checkRole(['Doctor', 'Admin', 'Super Admin']),
-  checkDoubleBooking,
-  checkWorkingHours,
-  appointmentController.createAppointment
+router.post(
+  '/',
+  (req, res) => {
+    passport.authenticate('jwt', { session: false })(req, res, () => {
+      checkRole(['Doctor', 'Admin', 'Super Admin'])(req, res, () => {
+        checkDoubleBooking(req, res, () => {
+          checkWorkingHours(req, res, () => {
+            appointmentController.createAppointment(req, res);
+          });
+        });
+      });
+    });
+  }
 );
 
-// router.get('/',
-//   passport.authenticate('jwt', { session: false }),
-//   checkRole(['Doctor', 'Admin', 'Super Admin', 'Staff']),
-//   appointmentController.getAppointments
-// );
-router.put('/:id',
-  passport.authenticate('jwt', { session: false }),
-  checkRole(['Doctor', 'Admin', 'Super Admin']),
-  checkDoubleBooking,
-  checkWorkingHours,
-  appointmentController.updateAppointment
+router.get(
+  '/',
+  (req, res) => {
+    passport.authenticate('jwt', { session: false })(req, res, () => {
+      checkRole(['Doctor', 'Admin', 'Super Admin', 'Staff'])(req, res, () => {
+        appointmentController.getAppointments(req, res);
+      });
+    });
+  }
 );
-router.delete('/:id',
-  passport.authenticate('jwt', { session: false }),
-  checkRole(['Doctor', 'Admin', 'Super Admin']),
-  appointmentController.deleteAppointment
+
+router.put(
+  '/:id',
+  (req, res) => {
+    passport.authenticate('jwt', { session: false })(req, res, () => {
+      checkRole(['Doctor', 'Admin', 'Super Admin'])(req, res, () => {
+        checkDoubleBooking(req, res, () => {
+          checkWorkingHours(req, res, () => {
+            appointmentController.updateAppointment(req, res);
+          });
+        });
+      });
+    });
+  }
 );
-router.get('/search',
-  passport.authenticate('jwt', { session: false }),
-  checkRole(['Super Admin', 'Admin', 'Staff']),
-  appointmentController.searchAppointments
+
+router.delete(
+  '/:id',
+  (req, res) => {
+    passport.authenticate('jwt', { session: false })(req, res, () => {
+      checkRole(['Doctor', 'Admin', 'Super Admin'])(req, res, () => {
+        appointmentController.deleteAppointment(req, res);
+      });
+    });
+  }
+);
+
+router.get(
+  '/search',
+  (req, res) => {
+    passport.authenticate('jwt', { session: false })(req, res, () => {
+      checkRole(['Super Admin', 'Admin', 'Staff'])(req, res, () => {
+        appointmentController.searchAppointments(req, res);
+      });
+    });
+  }
 );
 
 module.exports = router;

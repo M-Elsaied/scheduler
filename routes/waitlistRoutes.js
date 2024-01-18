@@ -8,14 +8,18 @@ router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
   checkRole(['Super Admin', 'Admin', 'Staff']),
-  waitlistController.createWaitlistEntry
+  (req, res) => {
+    waitlistController.createWaitlistEntry(req, res);
+  }
 );
 
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
   checkRole(['Super Admin', 'Admin', 'Staff']),
-  waitlistController.getWaitlistEntries
+  (req, res) => {
+    waitlistController.getWaitlistEntries(req, res);
+  }
 );
 
 module.exports = router;
