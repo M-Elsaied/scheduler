@@ -10,6 +10,11 @@ beforeEach(async () => {
   await User.deleteMany({});
 });
 
+beforeEach(async () => {
+  await User.deleteMany({});
+}, 10000); // Increase the timeout to 10000 milliseconds (10 seconds)
+
+
 // Disconnect from the test database after all tests
 afterAll(() => {
   mongoose.disconnect();

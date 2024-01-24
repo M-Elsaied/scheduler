@@ -8,9 +8,10 @@ const Appointment = require('../models/Appointment');
 require('./config/testConfig');
 
 async function createUser(role) {
+  const randomSuffix = Math.floor(Math.random() * 1000); // Add a random suffix to the username
   return await User.create({
-    username: `${role}User`,
-    email: `${role.toLowerCase()}@scheduler.com`,
+    username: `${role.toLowerCase()}test${randomSuffix}`,
+    email: `${role.toLowerCase()}test${randomSuffix}@scheduler.com`,
     password: '123456',
     role: role
   });
@@ -59,15 +60,15 @@ describe('Appointment Search', () => {
     const patient = await createUser('Patient');
     const provider = await createUser('Doctor');
     const otherProvider = await createUser('Doctor');
-    await createAppointment(patient._id, provider._id, new Date(), new Date(), 'Checkup', 'Downtown Clinic');
+    await createAppointment(patient._id, provider._id, new Date(), new Date(), 'Checkup', 'Sheraton');
     await createAppointment(patient._id, otherProvider._id, new Date(), new Date(), 'Consultation', 'Sheraton');
 
     const response = await supertest(app)
-      .get('/api/appointments/search?location=Downtown Clinic')
+      .get('/api/appointments/search?location=Sheraton')
       .set('Authorization', `Bearer ${superAdminToken}`);
     expect(response.body).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        location: 'Downtown Clinic'
+        location: 'Sheraton`'
       })
     ]));
   });
