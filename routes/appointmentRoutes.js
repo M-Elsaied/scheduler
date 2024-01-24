@@ -1,18 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const appointmentController = require('../controllers/appointmentController');
-const { checkDoubleBooking, checkWorkingHours } = require('../middleware/appointmentRules');
+const { checkDoubleBooking, checkWorkingHours, validateDoctorAvailability } = require('../middleware/appointmentRules');
 const { checkRole } = require('../middleware/auth');
 const passport = require('passport');
+
+//need to add validateDoctorAvailability
 
 router.post(
   '/',
   (req, res) => {
     passport.authenticate('jwt', { session: false })(req, res, () => {
-      checkRole(['Doctor', 'Admin', 'Super Admin'])(req, res, () => {
+      checkRole(['Doctor', 'Admin', 'Super Admin', 'Staff'])(req, res, () => {
         checkDoubleBooking(req, res, () => {
           checkWorkingHours(req, res, () => {
+            validateDoctorAvailability(req, res, () => {
             appointmentController.createAppointment(req, res);
+            });
           });
         });
       });
@@ -38,7 +42,9 @@ router.put(
       checkRole(['Doctor', 'Admin', 'Super Admin'])(req, res, () => {
         checkDoubleBooking(req, res, () => {
           checkWorkingHours(req, res, () => {
-            appointmentController.updateAppointment(req, res);
+            validateDoctorAvailability(req, res, () => {
+              appointmentController.updateAppointment(req, res);
+           });
           });
         });
       });
