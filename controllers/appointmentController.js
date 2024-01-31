@@ -2,6 +2,7 @@ const Appointment = require('../models/Appointment');
 const User = require('../models/User');
 const { sendEmail, sendWhatsAppMessage } = require('../utils/notifications');
 const waitlistController = require('./waitlistController');
+const { checkRole } = require('../middleware/auth');
 
 exports.createAppointment = async (req, res) => {
   try {
@@ -14,7 +15,12 @@ exports.createAppointment = async (req, res) => {
     sendEmail(patient.email, 'Appointment Booked', message);
     sendWhatsAppMessage(patient.phone, message);
 
-    await waitlistController.processWaitlist(req.body.provider, req.body.startTime, req.body.endTime, req.body.location);
+    await waitlistController.processWaitlist(
+      req.body.provider,
+      req.body.startTime,
+      req.body.endTime,
+      req.body.location
+    );
 
     res.status(201).json(appointment);
   } catch (error) {
@@ -25,7 +31,9 @@ exports.createAppointment = async (req, res) => {
 exports.updateAppointment = async (req, res) => {
   const { id } = req.params;
   try {
-    const appointment = await Appointment.findByIdAndUpdate(id, req.body, {new: true});
+    const appointment = await Appointment.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
     const patient = await User.findById(req.body.patient);
     const provider = await User.findById(req.body.provider);
     const message = `Dear ${patient.username}, your appointment with ${provider.username} has been updated to start at ${req.body.startTime}.`;
@@ -40,7 +48,9 @@ exports.updateAppointment = async (req, res) => {
 exports.deleteAppointment = async (req, res) => {
   const { id } = req.params;
   try {
-    const appointment = await Appointment.findById(id).populate('patient provider');
+    const appointment = await Appointment.findById(id).populate(
+      'patient provider'
+    );
     await Appointment.findByIdAndDelete(id);
     const message = `Dear ${appointment.patient.username}, your appointment with ${appointment.provider.username} scheduled for ${appointment.startTime} has been cancelled.`;
     sendEmail(appointment.patient.email, 'Appointment Cancelled', message);
@@ -51,30 +61,41 @@ exports.deleteAppointment = async (req, res) => {
   }
 };
 
+
 exports.searchAppointments = async (req, res) => {
   const { location, provider, service, startDate, endDate } = req.query;
+
   try {
-    let query = {};
+    const query = {};
+
     if (location) {
       query.location = location;
     }
+
     if (provider) {
       query.provider = provider;
     }
+
     if (service) {
       query.service = new RegExp(service, 'i');
     }
-    if (startDate && endDate) {
-      query.startTime = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate)
-      };
-    } else if (startDate) {
-      query.startTime = { $gte: new Date(startDate) };
-    } else if (endDate) {
-      query.startTime = { $lte: new Date(endDate) };
+
+    if (startDate || endDate) {
+      query.startTime = {};
+
+      if (startDate) {
+        query.startTime.$gte = new Date(startDate);
+      }
+
+      if (endDate) {
+        query.startTime.$lte = new Date(endDate);
+      }
     }
-    const appointments = await Appointment.find(query).populate('patient provider');
+
+    const appointments = await Appointment.find(query)
+      .populate('patient provider')
+      .exec();
+
     res.status(200).json(appointments);
   } catch (error) {
     res.status(500).json({ msg: error.message });

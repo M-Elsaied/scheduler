@@ -25,8 +25,8 @@ const appointmentSchema = new Schema({
     required: [true, 'End time is required']
   },
   location: {
-    type: Schema.Types.ObjectId,
-    ref: 'Location',
+    type: String,
+    enum: ['Sheraton', 'Tagamo3', 'shero2', 'Downtown Clinic'],
     required: true
   },
   status: {

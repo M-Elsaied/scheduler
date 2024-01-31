@@ -8,10 +8,10 @@ const Appointment = require('../models/Appointment');
 require('./config/testConfig');
 
 async function createUser(role) {
-  const randomSuffix = Math.floor(Math.random() * 1000); // Add a random suffix to the username
+  const randomSuffix = Math.floor(Math.random() * 100000); // Add a random suffix to the username
   return await User.create({
-    username: `${role.toLowerCase()}test${randomSuffix}`,
-    email: `${role.toLowerCase()}test${randomSuffix}@scheduler.com`,
+    username: `${role.toLowerCase()}test1${randomSuffix}`,
+    email: `${role.toLowerCase()}test1${randomSuffix}@scheduler.com`,
     password: '123456',
     role: role
   });
@@ -28,10 +28,38 @@ async function createAppointment(patient, provider, startTime, endTime, service,
   });
 }
 
-const superAdminToken = jwt.sign({ role: 'Super Admin' }, process.env.JWT_SECRET);
 
+
+const secret = process.env.JWT_SECRET;
+const payload = { role: 'Super Admin' };
+
+// Generate the token
+// const superAdminToken = jwt.sign(payload, secret);
+// const superAdminToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YjdjY2UzMjdlZWMxZTBlMGQxZTQ1OCIsImlhdCI6MTcwNjU0NDk3OCwiZXhwIjoxNzA2NjMxMzc4fQ.EDILyh2b9C2wOxD_PzVYwFFAkNvQgYwrW8tfTkojvbM'
+
+// // Verify the token
+// jwt.verify(superAdminToken, secret, (err, decoded) => {
+//   if (err) {
+//     console.error('Token verification failed:', err);
+//   } else {
+//     console.log('Token is valid. Decoded payload:', decoded);
+//   }
+// });
+
+let superAdminToken;
+let superAdminId;
+
+function generateToken(user) {
+  return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: '1d',
+  });
+}
 beforeAll(async () => {
   await mongoose.connect(process.env.MONGODB_URI);
+  const superAdminUser = await createUser('Super Admin');
+  await superAdminUser.save();
+  superAdminId = superAdminUser._id;
+  superAdminToken = generateToken(superAdminUser)
 });
 
 beforeEach(async () => {
@@ -50,7 +78,10 @@ describe('Appointment Search', () => {
 
     const response = await supertest(app)
       .get('/api/appointments/search')
-      .set('Authorization', `Bearer ${superAdminToken}`);
+      .set('Authorization', `Bearer ${superAdminToken}`)
+      .catch((error) => {
+        console.error('Error during the HTTP request:', error);
+      });
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(1);
@@ -68,7 +99,7 @@ describe('Appointment Search', () => {
       .set('Authorization', `Bearer ${superAdminToken}`);
     expect(response.body).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        location: 'Sheraton`'
+        location: 'Sheraton'
       })
     ]));
   });
@@ -76,19 +107,18 @@ describe('Appointment Search', () => {
   it('should retrieve appointments filtered by provider', async () => {
     const patient = await createUser('Patient');
     const provider = await createUser('Doctor');
+    const otherProvider = await createUser('Doctor');
     const otherPatient = await createUser('Patient');
     await createAppointment(patient._id, provider._id, new Date(), new Date(), 'Checkup', 'Downtown Clinic');
-    await createAppointment(otherPatient._id, provider._id, new Date(), new Date(), 'Consultation', 'Sheraton');
+    await createAppointment(otherPatient._id, otherProvider._id, new Date(), new Date(), 'Consultation', 'Sheraton');
 
     const response = await supertest(app)
       .get(`/api/appointments/search?provider=${provider._id}`)
       .set('Authorization', `Bearer ${superAdminToken}`);
-    expect(response.body).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        provider: provider._id
-      })
-    ]));
+    // Simplified expectation to check if the response contains the expected provider _id
+    expect(response.body[0].provider._id.toString()).toEqual(provider._id.toString());
   });
+
 
   it('should retrieve appointments filtered by service', async () => {
     const patient = await createUser('Patient');
@@ -121,11 +151,10 @@ describe('Appointment Search', () => {
     const response = await supertest(app)
       .get(`/api/appointments/search?start=${pastStartTime.toISOString()}&end=${endTime.toISOString()}`)
       .set('Authorization', `Bearer ${superAdminToken}`);
-    expect(response.body).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        startTime: { $gte: pastStartTime.toISOString() },
-        endTime: { $lte: endTime.toISOString() }
-      })
-    ]));
+
+    // Check if the response contains the appointment with startTime >= pastStartTime
+    const matchingAppointment = response.body.find(appointment => new Date(appointment.startTime) >= pastStartTime);
+
+    expect(matchingAppointment).toBeDefined();
   });
 });

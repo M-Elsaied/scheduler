@@ -77,7 +77,7 @@ describe('Waitlist Processing', () => {
     });
 
     // Perform assertions to check the FIFO behavior
-    expect(waitlistEntry1.createdAt).toBeLessThan(waitlistEntry2.createdAt);
+    expect(waitlistEntry1.createdAt.getTime()).toBeLessThan(waitlistEntry2.createdAt.getTime());
   });
 
   it('Should automatically schedule patients from waitlist into vacant slots', async () => {

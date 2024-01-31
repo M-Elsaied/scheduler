@@ -16,8 +16,6 @@ let patientId;
 
 beforeAll(async () => {
   await connectDB();
-  console.log('Connected to the database');
-
   const adminUser = new User({
     username: 'admin1',
     email: 'admin1@example.com',
@@ -25,7 +23,6 @@ beforeAll(async () => {
     role: 'Admin',
   });
   await adminUser.save();
-  console.log('Admin user created');
 
   const patientUser = new User({
     username: 'patient1',
@@ -35,7 +32,6 @@ beforeAll(async () => {
   });
   await patientUser.save();
   patientId = patientUser._id;
-  console.log('Patient user created');
 
   const doctorUser = new User({
     username: 'doctor1',
@@ -45,7 +41,6 @@ beforeAll(async () => {
   });
   await doctorUser.save();
   doctorId = doctorUser._id;
-  console.log('Doctor user created');
 
   patientToken = generateToken(patientUser);
   doctorToken = generateToken(doctorUser);
@@ -54,14 +49,12 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await mongoose.connection.close();
-  console.log('Disconnected from the database');
 });
 
 afterEach(async () => {
   await Waitlist.deleteMany({});
   await Appointment.deleteMany({});
   await User.deleteMany({});
-  console.log('Cleared collections');
 });
 
 function generateToken(user) {
@@ -72,11 +65,15 @@ function generateToken(user) {
 
 describe('Waitlist mechanics tests', () => {
   test('it should create a waitlist entry as an admin', async () => {
+    const startTime = new Date();
+
     const waitlistEntry = {
       service: 'Check-up',
       location: 'Sheraton',
       patient: patientId,
       provider: doctorId,
+      appointmentTime: startTime, // Include appointment time
+
     };
 
     const response = await supertest(app)
@@ -84,33 +81,53 @@ describe('Waitlist mechanics tests', () => {
       .set('Authorization', `Bearer ${adminToken}`)
       .send(waitlistEntry);
 
-    console.log('Response:', response.statusCode);
 
     expect(response.statusCode).toBe(201);
   });
 
   test('it should process waitlist entries when an appointment slot opens as a doctor', async () => {
+    // Step 1: Create waitlist entries that match the criteria
     const startTime = new Date();
     const endTime = new Date(startTime.getTime() + 30 * 60000);
 
-    await new Appointment({
+    // Create a waitlist entry with the appointment time
+    const waitlistEntry1 = new Waitlist({
+      service: 'Check-up',
+      location: 'Sheraton',
+      patient: patientId,
+      provider: doctorId,
+      status: 'Pending',
+      appointmentTime: startTime, // Include appointment time
+    });
+    await waitlistEntry1.save();
+
+    // Step 2: Simulate the opening of an appointment slot
+    const appointment = new Appointment({
       provider: doctorId,
       startTime: startTime,
       endTime: endTime,
       service: 'Check-up',
-      patient: patientId,
-    }).save();
+      patient: patientId, // Ensure it's available
+      location: 'Sheraton',
+    });
+    await appointment.save();
 
-    console.log('Appointment created');
-
+    // Step 3: Trigger the processing of waitlist entries
     await processWaitlistEntries();
-    console.log('Processed waitlist entries');
 
-    const waitlistEntries = await Waitlist.find({ provider: doctorId, status: 'Processed' });
-    console.log('Waitlist entries:', waitlistEntries);
+    // Step 4: Check if waitlist entries have been processed and assigned
+    const processedWaitlistEntries = await Waitlist.find({
+      provider: doctorId,
+      status: 'Processed',
+    });
 
-    expect(waitlistEntries.length).toBeGreaterThan(0);
+    // Assertions
+    expect(processedWaitlistEntries.length).toBe(1); // There should be one processed entry
+    expect(processedWaitlistEntries[0].status).toBe('Processed');
+    expect(processedWaitlistEntries[0].appointmentTime).toBe(startTime); // Ensure appointment time matches
   });
+
+
 
   test('it should automatically schedule patients from waitlist using the cron job as a doctor', async (done) => {
     const waitlistCronJob = require('../jobs/scheduler').waitlistCronJob;
