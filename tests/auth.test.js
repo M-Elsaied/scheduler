@@ -2,17 +2,20 @@ const supertest = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const connectDB = require('../config/database');
+
 
 // Load test-specific configurations
-require('./config/testConfig');
+// require('./config/testConfig');
+
+
 
 beforeEach(async () => {
+  await connectDB();
+  console.log('Deleting user data...');
   await User.deleteMany({});
-});
-
-beforeEach(async () => {
-  await User.deleteMany({});
-}, 10000); // Increase the timeout to 10000 milliseconds (10 seconds)
+  console.log('User data deleted.');
+}, 10000);
 
 
 // Disconnect from the test database after all tests

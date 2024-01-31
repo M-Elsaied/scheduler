@@ -8,7 +8,6 @@ const checkRole = (roles) => async (req, res, next) => {
     const user = await User.findOne({
       _id: decoded.id
     });
-    console.log('I am here...');
 
     if (!user || !roles.includes(user.role)) {
       throw new Error('Not authorized');

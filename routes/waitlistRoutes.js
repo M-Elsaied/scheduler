@@ -6,19 +6,35 @@ const passport = require('passport');
 
 router.post(
   '/',
-  passport.authenticate('jwt', { session: false }),
-  checkRole(['Super Admin', 'Admin', 'Staff']),
   (req, res) => {
-    waitlistController.createWaitlistEntry(req, res);
+    passport.authenticate('jwt', { session: false })(req, res, () => {
+      checkRole(['Super Admin', 'Admin', 'Staff'])(req, res, () => {
+        waitlistController.createWaitlistEntry(req, res);
+      });
+    });
   }
 );
 
+
 router.get(
   '/',
-  passport.authenticate('jwt', { session: false }),
-  checkRole(['Super Admin', 'Admin', 'Staff']),
   (req, res) => {
-    waitlistController.getWaitlistEntries(req, res);
+    passport.authenticate('jwt', { session: false })(req, res, () => {
+      checkRole(['Super Admin', 'Admin', 'Staff'])(req, res, () => {
+        waitlistController.getWaitlistEntries(req, res);
+      });
+    });
+  }
+);
+
+router.delete(
+  '/:id',
+  (req, res) => {
+    passport.authenticate('jwt', { session: false })(req, res, () => {
+      checkRole(['Super Admin', 'Admin', 'Staff'])(req, res, () => {
+        waitlistController.deleteWaitlistEntry(req, res);
+      });
+    });
   }
 );
 

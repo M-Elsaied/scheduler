@@ -21,6 +21,10 @@ const waitlistSchema = new Schema({
     required: [true, 'Location is required'],
     enum: ['Sheraton', 'Sherouk', 'tagamo3'],
   },
+  appointmentTime: {
+    type: Date, // Assuming appointment time will be stored as a Date object
+    required: [true, 'Appointment time is required'],
+  },
   status: {
     type: String,
     enum: ['Pending', 'Processed'],
