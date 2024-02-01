@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const {roles} = require('../config/roles')
+const {roles} = require('../config/roles');
+const passportLocalMongoose = require('passport-local-mongoose');
+const passport = require('passport');
 
 
 const userSchema = new mongoose.Schema({
@@ -32,13 +34,21 @@ const userSchema = new mongoose.Schema({
     default: 'doctor'
     // ['Super Admin', 'Admin', 'Staff', 'Doctor', 'Patient']
   },
-  locations: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Location'
-  }]
+  location: {
+		street: String,
+		zipcode: String,
+		city: String,
+		state: String,
+	},
+  // locations: [{
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'Location'
+  // }]
 }, {
   timestamps: true
 });
+
+userSchema.plugin(passportLocalMongoose)
 
 userSchema.pre('save', async function(next) {
   if (this.isModified('password')) {

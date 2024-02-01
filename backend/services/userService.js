@@ -29,6 +29,16 @@ const queryUsers = async (filter, options) => {
   };
 
 
+  /**
+ * Get user by email
+ * @param {objectId} id
+ * @returns {Promise<User>}
+ */
+  const getOneUser = async(id) => {
+    return User.findById(id).lean();
+  }
+
+
 /**
  * Get user by email
  * @param {string} email
@@ -76,6 +86,7 @@ const deleteUserById = async (userId) => {
     queryUsers,
     getUserByEmail,
     updateUserById,
-    deleteUserById
+    deleteUserById,
+    getOneUser
   }
 

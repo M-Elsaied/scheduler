@@ -8,6 +8,12 @@ const register = {
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
     role: Joi.string().required().valid('patient', 'doctor', 'staff', 'admin', 'superAdmin'),
+    location: Joi.object({
+        street: Joi.string(),
+        zipcode: Joi.string(),
+        city: Joi.string(),
+        state: Joi.string()
+    })
   }),
 };
 const update = {
