@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const {roles} = require('../config/roles');
 const passportLocalMongoose = require('passport-local-mongoose');
-const passport = require('passport');
 
 
 const userSchema = new mongoose.Schema({
