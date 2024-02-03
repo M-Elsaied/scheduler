@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const catchAsync = require('../utils/catchAsync')
-const ApiError = require('../utils/ApiError')
 const locationService = require('../services/locationService')
 
 
