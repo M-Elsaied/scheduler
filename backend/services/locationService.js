@@ -20,15 +20,57 @@ const createLocation = async(locationBody) => {
  * @param {number} [options.page] - Current page (default = 1)
  * @returns {Promise<QueryResult>}
  */
-const queryLocations = async (filter, options) => {
-    const deliveries = await Location.paginate(filter, options);
+const queryLocations = async () => {
+    const deliveries = await Location.find();
     return deliveries;
+  };
+
+
+  /**
+ * Get subscription by id
+ * @param {ObjectId} id
+ * @returns {Promise<Subscription>}
+ */
+const getLocationById = async (id) => {
+    return Locattion.findById(id);
+  };
+
+/**
+ * Update subscription by id
+ * @param {ObjectId} locationId
+ * @param {Object} updateBody
+ * @returns {Promise<Location>}
+ */
+const updateLocationById = async (locationId, updateBody) => {
+    const location = await getLocationById(locationId);
+    if (!location) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Location not found');
+    }
+    Object.assign(location, updateBody);
+    await location.save();
+    return location;
+  };
+
+/**
+ * Delete subscription by id
+ * @param {ObjectId} locationId
+ * @returns {Promise<Location>}
+ */
+const deleteLocationById = async (locationId) => {
+    const location = await Location.findOneAndRemove({ _id: locationId });
+    if (!location) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Location not found');
+    }
+    // await subscription.remove();
+    return location;
   };
 
 
 
 module.exports = {
     createLocation,
-    queryLocations
+    queryLocations,
+    updateLocationById,
+    deleteLocationById
 }
 

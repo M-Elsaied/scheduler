@@ -9,7 +9,7 @@ const doctorSchema = new Schema({
     contactDetails: {
       phone: String,
       email: String
-    },
+    }, 
     ratings: {
       type: Number,
       default: 0

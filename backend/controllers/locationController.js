@@ -6,23 +6,33 @@ const locationService = require('../services/locationService')
 
 
 const createLocation = catchAsync(async(req, res) => {
-  const location = await locationService.createLocation(req.body)
-  res.status(httpStatus.CREATED).send(location)
+  const location = await locationService.createLocation(req.body);
+  res.status(httpStatus.CREATED).send(location);
 })
 
 const getLocations = catchAsync(async(req, res) => {
-  const filter = pick(req.query, ['address', 'phone']);
-  const options = pick(req.query, ['sortBy', 'limit', 'page']);
-  const result = await locationService.queryLocations(filter, options)
-  res.send(result)
+  // const filter = pick(req.query, ['address', 'phone']);
+  // const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const result = await locationService.queryLocations();
+  res.send(result);
 })
 
+const updateLocation = catchAsync(async(req, res) => {
+  const location = await locationService.updateLocationById(locationId, req.body);
+  res.send(location);
+})
 
+const deleteLocation = catchAsync(async(req, res) => {
+  await locationService.deleteLocationById(req.params.locationId);
+  res.status(httpStatus.NO_CONTENT).send();
+})
 
 
 module.exports = {
   createLocation,
-  getLocations
+  getLocations,
+  updateLocation,
+  deleteLocation
 }
 // const Location = require('../models/Location');
 

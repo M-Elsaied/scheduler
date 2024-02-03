@@ -3,21 +3,30 @@ const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const locationValidation = require('../validation/location.validation')
 const locationController = require('../controllers/locationController')
-// const userValidation = require('../validation/user.validation');
-// const userController = require('../controllers/userController');
+
 
 const router = express.Router();
 
-router
-  .route('/')
-  .post(auth('manageUsers'), validate(userValidation.createUser), userController.createUser)
-  .get(auth('getUsers'), validate(userValidation.getUsers), userController.getUsers);
+router.route('/')
+.post(validate(locationValidation.createLocation), locationController.createLocation)
+.get(validate(locationValidation.getLocations), locationController.getLocations)
 
-router
-  .route('/:userId')
-  .get(auth('getUsers'), validate(userValidation.getUser), userController.getUser)
-  .patch(auth('manageUsers'), validate(userValidation.updateUser), userController.updateUser)
-  .delete(auth('manageUsers'), validate(userValidation.deleteUser), userController.deleteUser);
+// router
+//   .route('/')
+//   .post(validate(locationValidation.createLocation), locationController.createLocation)
+//   .get(
+//     function (req, _, next) {
+//       req.query.only = typeof req.query.only === 'string' ? req.query.only.split(',') : req.query.only;
+//       next();
+//     },
+//     validate(locationValidation.getLocations));
+  // .get(auth(), validate(locationValidation.getLocations), locationController.getLocations);
+
+// router
+//   .route('/:locationId')
+//   .get(auth(), validate(locationValidation.getLocation), locationController.getLocation)
+//   .patch(auth(), validate(locationValidation.updateLocation), locationController.updateLocation)
+//   .delete(auth(), validate(locationValidation.deleteLocation), locationController.deleteLocation);
 
 module.exports = router;
 

@@ -23,13 +23,13 @@ app.use(express.json());
 // app.use('/api/user', user)
 app.use(session({
     //js object with these properties
-    secret:"our little secret",
+    secret:"local",
     resave:false,
     saveUninitialized:false
   }));
 app.use(passport.initialize())
 app.use(passport.session());
-passport.use('jwt', jwtStrategy)
+passport.use('local', jwtStrategy)
 
 app.use('/v1', routes)
 module.exports = app;
