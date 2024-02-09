@@ -1,51 +1,128 @@
-const Appointment = require('../models/Appointment');
-const User = require('../models/User');
 const { sendEmail, sendWhatsAppMessage } = require('../utils/notifications');
 const waitlistController = require('./waitlistController');
 const { checkRole } = require('../middleware/auth');
+const { waitlistService, userService, doctorService } = require('../services');
+const catchAsync = require('../utils/catchAsync');
+const appointmentService = require('../services/appointmentService')
 
-// AppointmentController, authController, locationcontroller, 
 
-exports.createAppointment = async (req, res) => {
+
+// const patient = await User.findById(patientId);
+// const doctor = await doctorService.findById(doctorId)
+// // const doctor = await User.findById(providerBody);
+
+// const message = `Dear ${patient.firstname}, your appointment with ${doctor.username} at ${req.body.startTime} has been booked.`;
+
+// sendEmail(patient.email, 'Appointment Booked', message);
+// sendWhatsAppMessage(patient.phone, message);
+
+// await waitlistService.processWaitlist(
+//     doctor,
+//     startTime,
+//     endTime,
+//     location
+// )
+
+// AppointmentController, authController, locationcontroller,
+
+// const createWaitlist = catchAsync(async(req, res) => {
+//   const waitlist = await waitlistService.createWaitlistEntry(req.body);
+//   res.status(httpStatus.CREATED).send(waitlist);
+// })
+
+const createAppointment = catchAsync(async (req, res) => {
+  console.log(req.body.doctorId)
+  // patientid, doctorid,service,time,location,status
   try {
-    const appointment = new Appointment(req.body);
-    await appointment.save();
-    const patient = await User.findById(req.body.patient);
-    const provider = await User.findById(req.body.provider);
-    const message = `Dear ${patient.username}, your appointment with ${provider.username} at ${req.body.startTime} has been booked.`;
+    // const patient = await User.findById(req.bodypatientId);
+    console.log('next hit herrs')
+    const patient = await userService.getOneUser(req.body.patientId)
+    console.log(patient)
 
-    sendEmail(patient.email, 'Appointment Booked', message);
-    sendWhatsAppMessage(patient.phone, message);
+    // console.log(typeof(patient), patient._id, 'see typeof')
+    // returnDocUser
+    const doctor = await doctorService.returnDocUser(req.body.doctorId)
+    console.log(doctor, 'see doctor')
+    // const doctor = await User.findById(providerBody);
+    // console.log(typeof(doctor), doctor.userId.firstname, 'see doctor,reur')
+    const service = req.body.service
+    const time = req.body.time
 
-    await waitlistController.processWaitlist(
-      req.body.provider,
-      req.body.startTime,
-      req.body.endTime,
-      req.body.location
-    );
+    const message = `Dear ${patient.firstname}, your appointment with Dr. ${doctor.userId.firstname} at ${req.body.time} has been booked.`;
+    console.log(message)
 
-    res.status(201).json(appointment);
+    console.log(patient.phone, 'see phone details')
+
+    const emails = await sendEmail(patient.email, 'Appointment Booked', message);
+    console.log(emails, 'see emails')
+
+    const whatsapp = await sendWhatsAppMessage(patient.phone, message);
+    console.log(whatsapp, 'see whatsapp logs')
+
+    const capp = await appointmentService.createAppointment(patient._id, doctor._id, service, time)
+    console.log(capp, 'see caps')
+    // const serviceBody = await waitlistService.processWaitlist(
+    //   doctor,
+    //   // req.body.provider,
+    //   req.body.startTime,
+    //   req.body.endTime,
+    //   req.body.location
+    // )
+    // console.log(serviceBody)
+    // res.status(201).json(message);
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }
-};
+});
 
-exports.updateAppointment = async (req, res) => {
-  const { id } = req.params;
+const getAppointments = catchAsync(async(req, res) => {
+  const appointments = await appointmentService.queryAppointments()
+  res.send(appointments)
+})
+
+// const createWaitlist = catchAsync(async(req, res) => {
+//   const waitlist = await waitlistService.createWaitlistEntry(req.body);
+//   res.status(httpStatus.CREATED).send(waitlist);
+// })
+
+const updateAppointment = catchAsync(async(req, res) => {
+  // const { id } = req.params;
   try {
-    const appointment = await Appointment.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+    // const appointment = await Appointment.findByIdAndUpdate(id, req.body, {
+    //   new: true,
+    // });
     const patient = await User.findById(req.body.patient);
     const provider = await User.findById(req.body.provider);
     const message = `Dear ${patient.username}, your appointment with ${provider.username} has been updated to start at ${req.body.startTime}.`;
     sendEmail(patient.email, 'Appointment Updated', message);
     sendWhatsAppMessage(patient.phone, message);
-    res.json(appointment);
+
+    const appointment = await appointmentService.updateAppointmentById()
+
+    // const appointment = await 
+    // res.json(appointment);
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }
-};
+
+})
+
+// exports.updateAppointment = async (req, res) => {
+//   const { id } = req.params;
+//   try {
+//     const appointment = await Appointment.findByIdAndUpdate(id, req.body, {
+//       new: true,
+//     });
+//     const patient = await User.findById(req.body.patient);
+//     const provider = await User.findById(req.body.provider);
+//     const message = `Dear ${patient.username}, your appointment with ${provider.username} has been updated to start at ${req.body.startTime}.`;
+//     sendEmail(patient.email, 'Appointment Updated', message);
+//     sendWhatsAppMessage(patient.phone, message);
+//     res.json(appointment);
+//   } catch (error) {
+//     res.status(500).json({ msg: error.message });
+//   }
+// };
 
 exports.deleteAppointment = async (req, res) => {
   const { id } = req.params;
@@ -64,42 +141,48 @@ exports.deleteAppointment = async (req, res) => {
 };
 
 
-exports.searchAppointments = async (req, res) => {
-  const { location, provider, service, startDate, endDate } = req.query;
+// exports.searchAppointments = async (req, res) => {
+//   const { location, provider, service, startDate, endDate } = req.query;
 
-  try {
-    const query = {};
+//   try {
+//     const query = {};
 
-    if (location) {
-      query.location = location;
-    }
+//     if (location) {
+//       query.location = location;
+//     }
 
-    if (provider) {
-      query.provider = provider;
-    }
+//     if (provider) {
+//       query.provider = provider;
+//     }
 
-    if (service) {
-      query.service = new RegExp(service, 'i');
-    }
+//     if (service) {
+//       query.service = new RegExp(service, 'i');
+//     }
 
-    if (startDate || endDate) {
-      query.startTime = {};
+//     if (startDate || endDate) {
+//       query.startTime = {};
 
-      if (startDate) {
-        query.startTime.$gte = new Date(startDate);
-      }
+//       if (startDate) {
+//         query.startTime.$gte = new Date(startDate);
+//       }
 
-      if (endDate) {
-        query.startTime.$lte = new Date(endDate);
-      }
-    }
+//       if (endDate) {
+//         query.startTime.$lte = new Date(endDate);
+//       }
+//     }
 
-    const appointments = await Appointment.find(query)
-      .populate('patient provider')
-      .exec();
+//     const appointments = await Appointment.find(query)
+//       .populate('patient provider')
+//       .exec();
 
-    res.status(200).json(appointments);
-  } catch (error) {
-    res.status(500).json({ msg: error.message });
-  }
-};
+//     res.status(200).json(appointments);
+//   } catch (error) {
+//     res.status(500).json({ msg: error.message });
+//   }
+// };
+
+module.exports = {
+  createAppointment,
+  getAppointments
+
+}

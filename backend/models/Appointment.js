@@ -1,33 +1,39 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+// patientid, doctorid, service, startTime, endTime, location, status
+
 const appointmentSchema = new Schema({
-  patient: {
+  patientId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'Patient is required']
+    // required: [true, 'Patient is required']
   },
-  provider: {
+  doctorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Doctor',
-    required: [true, 'Provider is required']
+    // required: [true, 'Provider is required']
   },
   service: {
     type: String,
-    required: [true, 'Service is required']
+    // required: [true, 'Service is required']
   },
-  startTime: {
+  time: {
     type: Date,
-    required: [true, 'Start time is required']
+    // required: [true, 'date and time is required']
   },
-  endTime: {
-    type: Date,
-    required: [true, 'End time is required']
-  },
+  // startTime: {
+  //   type: Date,
+  //   required: [true, 'Start time is required']
+  // },
+  // endTime: {
+  //   type: Date,
+  //   required: [true, 'End time is required']
+  // },
   location: {
     type: String,
     enum: ['Sheraton', 'Tagamo3', 'shero2', 'Downtown Clinic'],
-    required: true
+    // required: true
   },
   status: {
     type: String,
@@ -38,6 +44,6 @@ const appointmentSchema = new Schema({
   timestamps: true
 });
 
-appointmentSchema.index({ provider: 1, startTime: 1, service: 'text', location: 1 }); // Optimize queries based on provider, start time, service, and location
+appointmentSchema.index({ provider: 1, time: 1, service: 'text', location: 1 }); // Optimize queries based on provider, start time, service, and location
 
 module.exports = mongoose.model('Appointment', appointmentSchema);

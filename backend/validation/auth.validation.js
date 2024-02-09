@@ -7,6 +7,7 @@ const register = {
     password: Joi.string().required().custom(password),
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
+    phone: Joi.string(),
     role: Joi.string().required().valid('patient', 'doctor', 'staff', 'admin', 'superAdmin'),
     location: Joi.object({
         street: Joi.string(),

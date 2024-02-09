@@ -3,6 +3,7 @@ const Doctor = require('../models/Doctor')
 // const {Provider} = require('../models/Provider.js')
 const ApiError = require('../utils/ApiError.js');
 const httpStatus = require('http-status');
+const userService = require('../services/userService.js');
 
 /**
  * Create a location
@@ -10,7 +11,9 @@ const httpStatus = require('http-status');
  * @returns {Promise<Doctor>}
  */
 const createDoctor = async(doctorBody) => {
-  console.log(doctorBody, 'see doctor hody')
+  // console.log(doctorBody, 'see doctor hody')
+  expDoc = await userService.getOneUser(doctorBody.userId)
+  console.log(expDoc)
     return Doctor.create(doctorBody)
 }
 
@@ -35,8 +38,18 @@ const queryDoctors = async () => {
  * @returns {Promise<Provider>}
  */
 const getDoctorById = async (id) => {
+  console.log('hit test doctor')
     return Doctor.findById(id);
   };
+
+
+  const returnDocUser = async(id) => {
+    console.log('see doc userUsers')
+    return Doctor.findById(id).populate({
+      path: 'userId',
+      model: 'User'
+    }).exec();
+  }
 
 /**
  * Update provider by id
@@ -60,13 +73,11 @@ const updateDoctorById = async (doctorId, updateBody) => {
  * @returns {Promise<Provider>}
  */
 const deleteDoctorById = async (doctorId) => {
-    const provider = await Doctor.findOneAndRemove({ _id: providerId });
-    if (!provider) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Location not found');
+    const doctor = await Doctor.findOneAndRemove({ _id: doctorId });
+    if (!doctor) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Doctor not found');
     }
-    return await provider.remove();
-    // await subscription.remove();
-    // return provider;
+    return await doctor.remove();
   };
 
 
@@ -74,7 +85,9 @@ const deleteDoctorById = async (doctorId) => {
 module.exports = {
     createDoctor,
     queryDoctors,
+    getDoctorById,
     updateDoctorById,
-    deleteDoctorById
+    deleteDoctorById,
+    returnDocUser
 }
 

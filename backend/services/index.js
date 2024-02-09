@@ -4,3 +4,4 @@ module.exports.tokenService = require('./tokenService');
 module.exports.emailService = require('./mailService');
 module.exports.waitlistService = require('./waitlistService');
 module.exports.doctorService = require('./doctorService');
+module.exports.appointmentService = require('./appointmentService');

@@ -7,10 +7,10 @@ const waitlistSchema = new Schema({
     ref: 'User',
     required: [true, 'Patient is required']
   },
-  provider: {
+  doctor: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'Provider is required']
+    ref: 'Doctor',
+    required: [true, 'Doctor is required']
   },
   service: {
     type: String,
