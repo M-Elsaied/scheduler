@@ -4,6 +4,7 @@ const userRoute = require('./userRoute')
 const authRoute = require('./authRoutes')
 const locationRoute = require('./locationRoute')
 const doctorRoute = require('./doctorRoutes');
+const appointmentRoute = require('./appointmentRoutes')
 
 
 const defaultRoutes = [
@@ -22,6 +23,10 @@ const defaultRoutes = [
     {
       path: '/doctor',
       route: doctorRoute
+    },
+    {
+      path: '/appointment',
+      route: appointmentRoute
     }
   ];
 

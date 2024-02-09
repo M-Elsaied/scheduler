@@ -3,6 +3,7 @@ const httpStatus = require('http-status');
 // const config = require('../config/config');
 
 const processWaitlist = async(provider, appointmentTime, location) => {
+  console.log('it hit external')
     try {
         const waitlistEntries = await Waitlist.find({
           provider,
@@ -10,6 +11,7 @@ const processWaitlist = async(provider, appointmentTime, location) => {
           status: 'Pending',
           appointmentTime: { $lte: appointmentTime } // Process only if appointment time is less than or equal
         }).sort({ createdAt: 1 });
+        console.log(waitlistEntries, 'see entries')
     
         // Process the waitlist entries
         for (const entry of waitlistEntries) {

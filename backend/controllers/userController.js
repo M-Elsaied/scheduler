@@ -43,12 +43,6 @@ const getUsers = catchAsync(async (req, res) => {
     updateUser,
     deleteUser,
   };
-
-
-
-
-
-
 // exports.register = async (req, res) => {
 //   const { username, email, password, role } = req.body;
 //   try {

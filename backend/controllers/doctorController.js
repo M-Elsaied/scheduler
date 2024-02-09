@@ -3,6 +3,7 @@ const catchAsync = require('../utils/catchAsync');
 const doctorService = require('../services/doctorService');
 
 const createDoctor = catchAsync(async(req, res) => {
+    
     const doctor = await doctorService.createDoctor(req.body);
     res.status(httpStatus.CREATED).send(doctor);
 })

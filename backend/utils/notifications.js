@@ -11,7 +11,7 @@ const initializeEmailTransporter = () => {
     transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: process.env.EMAIL_PORT,
-      secure: false,
+      secure: true,
       requireTLS: true,
       auth: {
         user: process.env.EMAIL_USERNAME,
@@ -45,6 +45,7 @@ async function sendEmail(to, subject, text) {
     subject: subject,
     text: text
   };
+  console.log(mailOptions)
 
   try {
     await transporter.sendMail(mailOptions);

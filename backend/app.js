@@ -30,6 +30,7 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session());
 passport.use('local', jwtStrategy)
+// console.log('home')
 
 app.use('/v1', routes)
 module.exports = app;

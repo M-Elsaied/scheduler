@@ -6,6 +6,7 @@ const createUser = {
     // : Joi.string().custom(objectId).allow(null),
     firstname: Joi.string().required(),
     lastname: Joi.string().required(),
+    phone: Joi.string(),
     // name: Joi.string(),
     // stripeCus: {type: String},
     email: Joi.string().required().email(),
@@ -19,6 +20,7 @@ const getUsers = {
   query: Joi.object().keys({
     name: Joi.string(),
     role: Joi.string(),
+    phone: Joi.string(),
     // : Joi.string().custom(objectId),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
