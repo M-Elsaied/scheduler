@@ -3,7 +3,8 @@ const waitlistController = require('./waitlistController');
 const { checkRole } = require('../middleware/auth');
 const { waitlistService, userService, doctorService } = require('../services');
 const catchAsync = require('../utils/catchAsync');
-const appointmentService = require('../services/appointmentService')
+const appointmentService = require('../services/appointmentService');
+const { SubscribedTrackListInstance } = require('twilio/lib/rest/video/v1/room/participant/subscribedTrack');
 
 
 
@@ -53,23 +54,15 @@ const createAppointment = catchAsync(async (req, res) => {
 
     console.log(patient.phone, 'see phone details')
 
-    const emails = await sendEmail(patient.email, 'Appointment Booked', message);
-    console.log(emails, 'see emails')
-
+    const email = await sendEmail(patient.email, 'Appointment Booked', message);
+    // console.log(emails, 'see emails')
+    // console.log(patient.phone, 'see phone no')
     const whatsapp = await sendWhatsAppMessage(patient.phone, message);
-    console.log(whatsapp, 'see whatsapp logs')
-
+    // console.log(whatsapp, 'see whatsapp logs')
     const capp = await appointmentService.createAppointment(patient._id, doctor._id, service, time)
-    console.log(capp, 'see caps')
-    // const serviceBody = await waitlistService.processWaitlist(
-    //   doctor,
-    //   // req.body.provider,
-    //   req.body.startTime,
-    //   req.body.endTime,
-    //   req.body.location
-    // )
-    // console.log(serviceBody)
-    // res.status(201).json(message);
+    // console.log(capp, 'see caps')
+    res.status(201).json({status: 'Success', capp});
+
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }

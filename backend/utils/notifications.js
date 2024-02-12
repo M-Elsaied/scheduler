@@ -57,18 +57,26 @@ async function sendEmail(to, subject, text) {
 
 async function sendWhatsAppMessage(to, body) {
   initializeTwilioClient();
+  console.log(process.env.TWILIO_WHATSAPP_FROM, 'see env')
+  console.log(`'whatsapp:${to}'`, 'see api number')
 
   if (!twilioClient) {
     console.warn('WhatsApp service is not configured. Message not sent.');
     return;
   }
 
+  // console.log()
+
   try {
-    await twilioClient.messages.create({
+    const seeI =await twilioClient.messages.create({
       body: body,
-      from: process.env.TWILIO_WHATSAPP_FROM,
-      to: `whatsapp:${to}`
+      from: 'whatsapp:+14155238886',
+      to: 'whatsapp:+15005550006'
+      // from: process.env.TWILIO_WHATSAPP_FROM,
+      // to: `whatsapp:${to}`
+      // console.log()
     });
+    console.log(seeI, 'error')
     console.log('WhatsApp message sent successfully');
   } catch (error) {
     console.error('Error sending WhatsApp message:', error);
